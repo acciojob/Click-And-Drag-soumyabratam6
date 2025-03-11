@@ -1,36 +1,53 @@
-// Your code here.
-const items = document.querySelector('.items');
-let isDown = false;
+const items = document.querySelector('.items'); // Get the container
+let isDragging = false;
 let startX;
-let scrollLeft;
+let startY;
+let currentX;
+let currentY;
+let offsetX = 0;
+let offsetY = 0;
 
+// Handle mousedown event (start dragging)
 items.addEventListener('mousedown', (e) => {
-  isDown = true;
+  isDragging = true;
+  startX = e.clientX - offsetX;
+  startY = e.clientY - offsetY;
+
+  // Add active class to change cursor style
   items.classList.add('active');
-
-  // Get the initial mouse position and scroll position
-  startX = e.pageX - items.offsetLeft;
-  scrollLeft = items.scrollLeft;
 });
 
-items.addEventListener('mouseleave', () => {
-  isDown = false;
-  items.classList.remove('active');
-});
-
-items.addEventListener('mouseup', () => {
-  isDown = false;
-  items.classList.remove('active');
-});
-
-items.addEventListener('mousemove', (e) => {
-  if (!isDown) return; // Stop if mouse button is not pressed
-  e.preventDefault();
+// Handle mousemove event (dragging)
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
 
   // Calculate new position based on mouse movement
-  const x = e.pageX - items.offsetLeft;
-  const walk = (x - startX) * 2; // Adjust sensitivity by multiplying
+  currentX = e.clientX - startX;
+  currentY = e.clientY - startY;
 
-  // Update scroll position
-  items.scrollLeft = scrollLeft - walk;
+  // Keep the element within the boundaries of the window
+  const containerRect = items.getBoundingClientRect();
+  const parentRect = items.parentElement.getBoundingClientRect();
+
+  // Boundary conditions
+  if (containerRect.left + currentX >= parentRect.left &&
+      containerRect.right + currentX <= parentRect.right) {
+    offsetX = currentX;
+  }
+
+  if (containerRect.top + currentY >= parentRect.top &&
+      containerRect.bottom + currentY <= parentRect.bottom) {
+    offsetY = currentY;
+  }
+
+  // Apply the new position using transform
+  items.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+});
+
+// Handle mouseup event (stop dragging)
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+
+  // Remove active class to reset cursor style
+  items.classList.remove('active');
 });
