@@ -36,40 +36,49 @@
 
 <script >
 //Your code goes here
-	const items = document.querySelector('.items');
-let isDown = false;
-let startX;
-let scrollLeft;
+document.querySelectorAll('.item').forEach(item => {
+    let offsetX, offsetY, isDragging = false;
 
-items.addEventListener('mousedown', (e) => {
-  isDown = true;
-  items.classList.add('active');
+    item.addEventListener('mousedown', (e) => {
+        isDragging = true;
 
-  // Get the initial mouse position and scroll position
-  startX = e.pageX - items.offsetLeft;
-  scrollLeft = items.scrollLeft;
-});
+        // Get initial mouse position relative to the cube
+        offsetX = e.clientX - item.getBoundingClientRect().left;
+        offsetY = e.clientY - item.getBoundingClientRect().top;
 
-items.addEventListener('mouseleave', () => {
-  isDown = false;
-  items.classList.remove('active');
-});
+        // Add dragging class for styling
+        item.classList.add('dragging');
+    });
 
-items.addEventListener('mouseup', () => {
-  isDown = false;
-  items.classList.remove('active');
-});
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
 
-items.addEventListener('mousemove', (e) => {
-  if (!isDown) return; // Stop if mouse button is not pressed
-  e.preventDefault();
+        // Get the bounding box of the container
+        const container = document.querySelector('.items').getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
 
-  // Calculate new position based on mouse movement
-  const x = e.pageX - items.offsetLeft;
-  const walk = (x - startX) * 2; // Adjust sensitivity by multiplying
+        // Calculate new position
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
 
-  // Update scroll position
-  items.scrollLeft = scrollLeft - walk;
+        // Boundary constraints
+        if (newX < container.left) newX = container.left;
+        if (newX + itemRect.width > container.right) newX = container.right - itemRect.width;
+        if (newY < container.top) newY = container.top;
+        if (newY + itemRect.height > container.bottom) newY = container.bottom - itemRect.height;
+
+        // Apply new position
+        item.style.position = 'absolute';
+        item.style.left = `${newX}px`;
+        item.style.top = `${newY}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            item.classList.remove('dragging');
+        }
+    });
 });
 
 
